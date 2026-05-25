@@ -1,0 +1,48 @@
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import { VitePWA } from 'vite-plugin-pwa';
+
+export default defineConfig({
+  plugins: [
+    react(),
+    tailwindcss(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['rescuenet-icon.svg'],
+      manifest: {
+        name: 'RescueNet — India Disaster Response',
+        short_name: 'RescueNet',
+        description: 'National emergency platform for India',
+        theme_color: '#2C3947',
+        background_color: '#E8EDF2',
+        display: 'standalone',
+        orientation: 'portrait-primary',
+        start_url: '/',
+        icons: [
+          {
+            src: '/rescuenet-icon.svg',
+            sizes: '192x192',
+            type: 'image/svg+xml',
+            purpose: 'any maskable',
+          },
+        ],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,svg,json}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/.*\.tile\.openstreetmap\.org\/.*/i,
+            handler: 'CacheFirst',
+            options: { cacheName: 'map-tiles', expiration: { maxEntries: 80 } },
+          },
+          {
+            urlPattern: /\/facilities-india\.json$/,
+            handler: 'CacheFirst',
+            options: { cacheName: 'facilities-data' },
+          },
+        ],
+      },
+    }),
+  ],
+});
