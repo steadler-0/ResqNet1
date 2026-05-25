@@ -7,7 +7,7 @@ export default function SiteFooter({ setPage }) {
   const { lang } = useLang();
 
   const links = [
-    { key: 'nav_dashboard', page: 'dashboard' },
+    { key: 'nav_sos_send', page: 'sos' },
     { key: 'nav_map', page: 'map' },
     { key: 'nav_alerts', page: 'alerts' },
     { key: 'nav_sos_send', page: 'sos' },

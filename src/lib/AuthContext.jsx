@@ -2,13 +2,25 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 
 const STORAGE_KEY = 'resqnet_session';
 
-const COORDINATOR_ACCOUNT = {
-  email: 'coord@resqnet.gov',
-  password: 'coord123',
-  role: 'coordinator',
-  name: 'Priya Sharma',
-  phone: '+91-11-2397-0101',
-  photo: null,
+const ACCOUNTS = {
+  coordinator: {
+    email: 'coord@resqnet.gov',
+    password: 'coord123',
+    role: 'coordinator',
+    name: 'Priya Sharma',
+    phone: '+91-11-2397-0101',
+    photo: null,
+  },
+  responder: {
+    email: 'responder@resqnet.gov',
+    password: 'respond123',
+    role: 'responder',
+    responderId: 'r-ndrf-1',
+    name: 'NDRF Unit 1',
+    team: 'NDRF',
+    phone: '+91-98-0000-0001',
+    photo: null,
+  },
 };
 
 const AuthContext = createContext(null);
@@ -17,7 +29,8 @@ function loadSession() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     const session = raw ? JSON.parse(raw) : null;
-    return session?.role === 'coordinator' ? session : null;
+    if (session?.role === 'coordinator' || session?.role === 'responder') return session;
+    return null;
   } catch {
     return null;
   }
@@ -32,23 +45,31 @@ export function AuthProvider({ children }) {
     setReady(true);
   }, []);
 
-  const login = useCallback(async (email, password) => {
+  const login = useCallback(async (email, password, roleHint = 'coordinator') => {
     const normalized = email.trim().toLowerCase();
-    if (!normalized || !password) {
-      throw new Error('required');
-    }
-    if (
-      normalized !== COORDINATOR_ACCOUNT.email ||
-      password !== COORDINATOR_ACCOUNT.password
-    ) {
+    if (!normalized || !password) throw new Error('required');
+
+    const account =
+      normalized === ACCOUNTS.responder.email
+        ? ACCOUNTS.responder
+        : normalized === ACCOUNTS.coordinator.email
+          ? ACCOUNTS.coordinator
+          : roleHint === 'responder'
+            ? ACCOUNTS.responder
+            : ACCOUNTS.coordinator;
+
+    if (normalized !== account.email || password !== account.password) {
       throw new Error('invalid');
     }
+
     const session = {
-      email: COORDINATOR_ACCOUNT.email,
-      name: COORDINATOR_ACCOUNT.name,
-      phone: COORDINATOR_ACCOUNT.phone,
-      role: 'coordinator',
-      photo: COORDINATOR_ACCOUNT.photo,
+      email: account.email,
+      name: account.name,
+      phone: account.phone,
+      role: account.role,
+      photo: account.photo,
+      responderId: account.responderId,
+      team: account.team,
       loginAt: new Date().toISOString(),
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
@@ -61,6 +82,24 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
+  /** One-tap demo login for responder / coordinator testing */
+  const demoLogin = useCallback(async (role = 'responder') => {
+    const account = ACCOUNTS[role] || ACCOUNTS.responder;
+    const session = {
+      email: account.email,
+      name: account.name,
+      phone: account.phone,
+      role: account.role,
+      photo: account.photo,
+      responderId: account.responderId,
+      team: account.team,
+      loginAt: new Date().toISOString(),
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+    setUser(session);
+    return session;
+  }, []);
+
   const updateProfile = useCallback((patch) => {
     setUser((prev) => {
       if (!prev) return prev;
@@ -71,6 +110,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const isCoordinator = user?.role === 'coordinator';
+  const isResponder = user?.role === 'responder';
 
   return (
     <AuthContext.Provider
@@ -78,10 +118,12 @@ export function AuthProvider({ children }) {
         user,
         ready,
         login,
+        demoLogin,
         logout,
         updateProfile,
-        isAuthenticated: isCoordinator,
+        isAuthenticated: isCoordinator || isResponder,
         isCoordinator,
+        isResponder,
       }}
     >
       {children}
@@ -96,5 +138,7 @@ export function useAuth() {
 }
 
 export function getDefaultPageForRole(role) {
-  return role === 'coordinator' ? 'alerts' : 'dashboard';
+  if (role === 'coordinator') return 'alerts';
+  if (role === 'responder') return 'responder';
+  return 'sos';
 }

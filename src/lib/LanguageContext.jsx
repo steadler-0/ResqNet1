@@ -23,7 +23,9 @@ export function LanguageProvider({ children }) {
 
   return (
     <LanguageContext.Provider value={{ lang, setLang }}>
-      {children}
+      <div key={lang} className="contents">
+        {children}
+      </div>
     </LanguageContext.Provider>
   );
 }

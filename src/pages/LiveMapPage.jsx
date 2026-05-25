@@ -4,7 +4,7 @@ import { MapPin, Phone } from 'lucide-react';
 import { useLang } from '../lib/LanguageContext';
 import { t } from '../lib/i18n';
 import { loadIndiaFacilities, getFacilitiesSync } from '../lib/facilitiesData';
-import { facilitiesNearby, geocodeLocation } from '../lib/geoSearch';
+import { searchFacilitiesForQueryAsync } from '../lib/geoSearch';
 import { FacilityIcon } from '../lib/iconMaps';
 import MapFacilityMarkers from '../components/MapFacilityMarkers';
 import SearchInput from '../components/SearchInput';
@@ -82,15 +82,21 @@ export default function LiveMapPage({ searchResults, searchLocation }) {
     }
     setSearching(true);
     try {
-      const results = await geocodeLocation(q);
-      if (results?.length > 0) {
-        const { lat, lon } = results[0];
-        const nearby = facilitiesNearby(allFacilities, parseFloat(lat), parseFloat(lon), 120);
-        setLocalResults(nearby.slice(0, 100));
-        setFlyTarget({ lat: parseFloat(lat), lng: parseFloat(lon) });
-      } else setLocalResults([]);
+      const { place, facilities: found } = await searchFacilitiesForQueryAsync(
+        allFacilities,
+        q,
+        150
+      );
+      if (place) {
+        setLocalResults(found.slice(0, 100));
+        setFlyTarget({ lat: place.lat, lng: place.lng });
+      } else {
+        setLocalResults([]);
+        setFlyTarget(null);
+      }
     } catch {
       setLocalResults([]);
+      setFlyTarget(null);
     } finally {
       setSearching(false);
     }

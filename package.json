@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "npm run dev --prefix server",
+    "dev:all": "concurrently -n web,api -c cyan,magenta \"npm run dev\" \"npm run dev:server\"",
     "build": "vite build",
     "preview": "vite preview",
     "merge:rescuenet": "node scripts/merge-to-rescuenet.mjs && node scripts/patch-rescuenet-dashboard.mjs",
@@ -17,11 +19,13 @@
     "lucide-react": "^1.16.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-leaflet": "^5.0.0"
+    "react-leaflet": "^5.0.0",
+    "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.7",
     "@vitejs/plugin-react": "^4.5.0",
+    "concurrently": "^9.1.2",
     "tailwindcss": "^4.1.7",
     "vite": "^6.3.5",
     "vite-plugin-pwa": "^1.3.0"

@@ -1,5 +1,7 @@
 import { broadcastLocationToCoordinators } from './coordinatorFeed';
 import { pushAlert } from './alertStore';
+import { createEmergency, patchEmergencyLocation, checkApiHealth, getApiBase } from './emergencyApi';
+import { emitSosRequest, getSocketUrl } from './socketClient';
 
 export const firebaseConfig = {
   apiKey: 'YOUR_API_KEY',
@@ -16,17 +18,56 @@ export async function submitEmergencyReport(report, reporter = {}) {
     reporterName: reporter.name || 'Citizen App',
     reporterEmail: reporter.email || '',
     reporterPhone: reporter.phone || '',
+    latitude: report.latitude ?? report.lat,
+    longitude: report.longitude ?? report.lng,
   };
-  pushAlert(full);
-  console.log('[ResqNet] Emergency report queued for coordinators:', full.id);
-  return full.id;
+
+  const apiUp = await checkApiHealth();
+  if (!apiUp) {
+    console.error('[ResqNet] API offline — run: npm run dev:server @', getApiBase());
+    pushAlert({ ...full, status: 'Broadcasting' });
+    throw new Error('api_offline');
+  }
+
+  let emergencyId = full.id;
+  let result = null;
+
+  try {
+    console.log('[ResqNet] Emitting sos_request via socket @', getSocketUrl());
+    result = await emitSosRequest(full);
+    emergencyId = result.emergency?.id || result.payload?.id || full.id;
+    console.log('[ResqNet] sos_request broadcast ok', emergencyId);
+  } catch (socketErr) {
+    console.warn('[ResqNet] sos_request failed, REST fallback:', socketErr.message);
+    result = await createEmergency(full);
+    emergencyId = result.emergency?.id || full.id;
+  }
+
+  pushAlert({
+    ...full,
+    id: emergencyId,
+    status: result?.emergency?.status || 'Broadcasting',
+    nearbyCount: result?.nearbyCount ?? 'all',
+    responderStatus: 'Request Received',
+    locked: false,
+  });
+
+  return emergencyId;
 }
 
 export async function updateEmergencyLocation(alertId, locationPayload) {
   broadcastLocationToCoordinators(alertId, locationPayload);
+
+  if (!(await checkApiHealth())) return alertId;
+
+  try {
+    await patchEmergencyLocation(alertId, locationPayload);
+  } catch (err) {
+    console.warn('[ResqNet] Location patch failed:', err.message);
+  }
   return alertId;
 }
 
-export function subscribeToEmergencies(callback) {
+export function subscribeToEmergencies() {
   return () => {};
 }

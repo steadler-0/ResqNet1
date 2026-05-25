@@ -64,13 +64,15 @@ export default function LiveMap({
 
       <MapContainer
         center={center}
-        zoom={hasFix ? 17 : 12}
+        zoom={hasFix ? 17 : 5}
+        minZoom={4}
+        maxBounds={[[6, 68], [36, 98]]}
         scrollWheelZoom
         className="h-[320px] w-full md:h-[400px]"
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> · India ops view'
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
         <MapUpdater
           latitude={latitude}

@@ -29,9 +29,12 @@ export const SUPPORTED_LANGUAGES = [
 
 import { LOCALE_PACKS } from './localePacks.js';
 
+/** Every locale inherits English keys, then applies its own overrides */
 export const translations = {
   en: EN_KEYS,
-  ...LOCALE_PACKS,
+  ...Object.fromEntries(
+    Object.entries(LOCALE_PACKS).map(([code, pack]) => [code, { ...EN_KEYS, ...pack }])
+  ),
 };
 
 export function t(lang, key, vars = {}) {

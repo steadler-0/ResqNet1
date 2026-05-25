@@ -4,10 +4,8 @@ import BrandLogo from './BrandLogo';
 import LanguageSelector from './LanguageSelector';
 
 const LANDING_LINKS = [
-  { id: 'dashboard', key: 'nav_dashboard' },
-  { id: 'map', key: 'nav_map' },
   { id: 'sos', key: 'nav_sos_send' },
-  { id: 'map', key: 'nav_resources' },
+  { id: 'map', key: 'nav_map' },
 ];
 
 export default function LandingNav({ setPage }) {
@@ -49,10 +47,19 @@ export default function LandingNav({ setPage }) {
           </button>
           <button
             type="button"
-            onClick={() => setPage('dashboard')}
+            onClick={() => {
+              window.location.hash = '#login/responder';
+            }}
+            className="hidden rounded-full border border-accent/50 bg-accent/20 px-4 py-1.5 text-sm font-semibold text-primary md:inline-flex"
+          >
+            {t(lang, 'nav_responder')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setPage('sos')}
             className="rounded-full bg-primary px-4 py-1.5 text-sm font-semibold text-white shadow-soft"
           >
-            {t(lang, 'nav_dashboard')}
+            {t(lang, 'nav_sos_send')}
           </button>
         </div>
       </div>

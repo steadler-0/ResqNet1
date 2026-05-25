@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { LanguageProvider } from './lib/LanguageContext';
 import { AuthProvider, useAuth, getDefaultPageForRole } from './lib/AuthContext';
-import { geocodeLocation, facilitiesNearby } from './lib/geoSearch';
+import { searchFacilitiesForQueryAsync } from './lib/geoSearch';
 import { loadIndiaFacilities, getFacilitiesSync } from './lib/facilitiesData';
 import { useLang } from './lib/LanguageContext';
 import { t } from './lib/i18n';
@@ -16,18 +16,28 @@ import DashboardPage from './pages/DashboardPage';
 import SOSPage from './pages/SOSPage';
 import LiveMapPage from './pages/LiveMapPage';
 import CoordinatorPage from './pages/CoordinatorPage';
+import ResponderPage from './pages/ResponderPage';
 import AlertsPage from './pages/AlertsPage';
 import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
+import { parseHashRoute, setHashRoute } from './lib/routing';
 
 function AppInner() {
   const { lang } = useLang();
   const { user, ready } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState('home');
+  const [page, setPageState] = useState('home');
+  const [loginRoleHint, setLoginRoleHint] = useState(null);
+
+  const setPage = (next) => {
+    setPageState(next);
+    setHashRoute(next, next === 'login' ? loginRoleHint : null);
+  };
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searchLocation, setSearchLocation] = useState(null);
+  const [searchPlace, setSearchPlace] = useState(null);
+  const [searchPlaceTick, setSearchPlaceTick] = useState(0);
   const [searching, setSearching] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [facilitiesReady, setFacilitiesReady] = useState(false);
@@ -38,16 +48,77 @@ function AppInner() {
     return () => clearTimeout(timer);
   }, []);
 
-  /** Coordinator-only routes (citizens use the app without signing in) */
-  const coordinatorOnlyPages = ['alerts', 'coordinator'];
+  const protectedPages = {
+    coordinator: ['alerts', 'coordinator'],
+    responder: ['responder'],
+  };
+
+  /* URL hash → page (shareable test links) */
+  useEffect(() => {
+    const applyHash = () => {
+      const { page: hashPage, role } = parseHashRoute();
+      if (role) setLoginRoleHint(role);
+      if (!hashPage) return;
+
+      if (hashPage === 'responder') {
+        if (user?.role === 'responder') setPageState('responder');
+        else {
+          setLoginRoleHint('responder');
+          setPageState('login');
+        }
+        return;
+      }
+
+      if (hashPage === 'login') {
+        setPageState('login');
+        return;
+      }
+
+      const needsAuth = protectedPages.coordinator.includes(hashPage);
+      if (needsAuth && !user) {
+        setLoginRoleHint('coordinator');
+        setPageState('login');
+        return;
+      }
+      setPageState(hashPage);
+    };
+
+    applyHash();
+    window.addEventListener('hashchange', applyHash);
+    return () => window.removeEventListener('hashchange', applyHash);
+  }, [user, ready]);
 
   useEffect(() => {
     if (!ready) return;
-    if (user?.role === 'coordinator' && page === 'login') {
-      setPage(getDefaultPageForRole(user.role));
+    if (user && page === 'login') {
+      const target = getDefaultPageForRole(user.role);
+      setPageState(target);
+      setHashRoute(target);
     }
-    if (!user && coordinatorOnlyPages.includes(page)) {
-      setPage('login');
+    if (!user && [...protectedPages.coordinator, ...protectedPages.responder].includes(page)) {
+      setLoginRoleHint(page === 'responder' ? 'responder' : 'coordinator');
+      setPageState('login');
+      setHashRoute('login', page === 'responder' ? 'responder' : 'coordinator');
+    }
+    if (user?.role === 'responder' && protectedPages.coordinator.includes(page)) {
+      setPageState('responder');
+      setHashRoute('responder');
+    }
+    if (user?.role === 'coordinator' && page === 'responder') {
+      setPageState('alerts');
+      setHashRoute('alerts');
+    }
+    if (user?.role === 'responder' && page === 'dashboard') {
+      setPageState('responder');
+      setHashRoute('responder');
+    }
+    if (!user && page === 'dashboard') {
+      setPageState('sos');
+      setHashRoute('sos');
+    }
+    if (user?.role !== 'coordinator' && user?.role !== 'responder' && page === 'dashboard') {
+      setPageState('sos');
+      setHashRoute('sos');
     }
   }, [user, ready, page]);
 
@@ -55,29 +126,46 @@ function AppInner() {
     const run = async () => {
       if (!searchQuery.trim()) {
         setSearchResults([]);
+        setSearchLocation(null);
+        setSearchPlace(null);
         return;
       }
       setSearching(true);
       try {
-        const results = await geocodeLocation(searchQuery);
+        await loadIndiaFacilities();
         const facilities = getFacilitiesSync();
-        if (results?.length > 0) {
-          const { lat, lon } = results[0];
-          const nearby = facilitiesNearby(facilities, parseFloat(lat), parseFloat(lon), 300);
-          setSearchResults(nearby.slice(0, 50));
-          setSearchLocation(results[0]);
+        const { place, facilities: found } = await searchFacilitiesForQueryAsync(
+          facilities,
+          searchQuery,
+          150
+        );
+        setSearchResults(found);
+        if (place) {
+          setSearchPlace(place);
+          setSearchLocation({ lat: String(place.lat), lon: String(place.lng), display_name: place.label });
         } else {
-          setSearchResults([]);
+          setSearchPlace(null);
+          setSearchLocation(null);
         }
       } catch {
         setSearchResults([]);
+        setSearchPlace(null);
+        setSearchLocation(null);
       } finally {
         setSearching(false);
       }
     };
-    const timer = setTimeout(run, 600);
+    const timer = setTimeout(run, 400);
     return () => clearTimeout(timer);
   }, [searchQuery, facilitiesReady]);
+
+  const applySearchPlace = (place) => {
+    if (place?.lat == null || place?.lng == null) return;
+    setSearchPlace(place);
+    setSearchLocation({ lat: String(place.lat), lon: String(place.lng), display_name: place.label });
+    setSearchPlaceTick((n) => n + 1);
+    setSearchOpen(false);
+  };
 
   if (loading || !ready) {
     return <LoadingOverlay message={t(lang, 'loading_app')} />;
@@ -86,7 +174,7 @@ function AppInner() {
   if (page === 'login') {
     return (
       <div className="app-shell min-h-screen bg-slate-bg">
-        <LoginPage setPage={setPage} />
+        <LoginPage setPage={setPage} initialRole={loginRoleHint || 'coordinator'} />
       </div>
     );
   }
@@ -116,25 +204,38 @@ function AppInner() {
           searchResults={searchResults}
           searchOpen={searchOpen}
           setSearchOpen={setSearchOpen}
+          searchPlace={searchPlace}
           onClearSearch={() => {
             setSearchQuery('');
             setSearchResults([]);
             setSearchLocation(null);
+            setSearchPlace(null);
             setSearchOpen(false);
           }}
-          onSelectResult={() => {
-            setPage('map');
+          onSelectPlace={(place) => applySearchPlace(place)}
+          onSelectResult={(facility) => {
+            applySearchPlace({
+              lat: facility.lat,
+              lng: facility.lng,
+              label: facility.name || facility.address,
+            });
+            if (page !== 'sos' && page !== 'responder') setPage('map');
             setSearchOpen(false);
           }}
         />
         <main className="page-transition flex-1 overflow-auto px-4 py-4 md:px-6 md:py-6">
           {page === 'dashboard' && <DashboardPage />}
-          {page === 'sos' && <SOSPage />}
+          {page === 'sos' && (
+            <SOSPage searchPlace={searchPlace} searchPlaceTick={searchPlaceTick} />
+          )}
           {page === 'map' && (
             <LiveMapPage searchResults={searchResults} searchLocation={searchLocation} />
           )}
           {page === 'alerts' && <AlertsPage />}
           {page === 'coordinator' && <CoordinatorPage />}
+          {page === 'responder' && (
+            <ResponderPage searchPlace={searchPlace} searchPlaceTick={searchPlaceTick} />
+          )}
           {page === 'profile' && <ProfilePage setPage={setPage} />}
           {page === 'home' && <HomePage setPage={setPage} />}
         </main>
