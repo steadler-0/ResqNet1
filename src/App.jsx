@@ -115,6 +115,12 @@ function AppInner() {
           searchResults={searchResults}
           searchOpen={searchOpen}
           setSearchOpen={setSearchOpen}
+          onClearSearch={() => {
+            setSearchQuery('');
+            setSearchResults([]);
+            setSearchLocation(null);
+            setSearchOpen(false);
+          }}
           onSelectResult={() => {
             setPage('map');
             setSearchOpen(false);

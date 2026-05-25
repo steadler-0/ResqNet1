@@ -137,6 +137,7 @@ export const EN_KEYS = {
   search_nearby_relief: 'Nearby Relief Centers',
   search_no_results: 'No facilities found in this area',
   search_searching: 'Searching...',
+  search_clear: 'Clear search',
   auth_login_title: 'Sign in to ResqNet',
   auth_login_subtitle: 'Citizen or coordinator access',
   auth_email: 'Email address',

@@ -1,7 +1,7 @@
-import { Search } from 'lucide-react';
 import { useLang } from '../lib/LanguageContext';
 import { t } from '../lib/i18n';
 import LanguageSelector from './LanguageSelector';
+import SearchInput from './SearchInput';
 
 export default function DashboardTopBar({
   searchQuery,
@@ -11,33 +11,26 @@ export default function DashboardTopBar({
   searchOpen,
   setSearchOpen,
   onSelectResult,
+  onClearSearch,
 }) {
   const { lang } = useLang();
 
   return (
     <div className="flex flex-wrap items-center gap-3 border-b border-primary/8 bg-slate-bg px-4 py-3 md:px-6 md:py-4 safe-top">
       <div className="relative min-w-0 flex-1 max-w-xl">
-        <Search
-          size={18}
-          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted"
-          strokeWidth={2}
-        />
-        <input
-          type="text"
+        <SearchInput
           value={searchQuery}
-          onChange={e => { setSearchQuery(e.target.value); setSearchOpen(true); }}
-          onFocus={() => setSearchOpen(true)}
+          onChange={(v) => {
+            setSearchQuery(v);
+            if (v) setSearchOpen(true);
+          }}
+          onClear={onClearSearch}
           placeholder={t(lang, 'nav_search_dashboard')}
-          className="w-full rounded-2xl border border-primary/8 bg-white py-3 pl-11 pr-4 text-sm text-primary shadow-soft placeholder:text-muted focus:border-secondary/40 focus:outline-none focus:ring-2 focus:ring-secondary/15"
+          searching={searching}
         />
-        {searching && (
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted">
-            {t(lang, 'search_searching')}
-          </span>
-        )}
         {searchOpen && searchResults.length > 0 && (
           <div className="absolute top-full left-0 right-0 z-50 mt-2 max-h-72 overflow-y-auto rounded-xl border border-primary/10 bg-white shadow-[0_8px_32px_rgba(30,41,59,0.12)]">
-            {searchResults.map(f => (
+            {searchResults.map((f) => (
               <button
                 key={f.id}
                 type="button"
@@ -48,6 +41,11 @@ export default function DashboardTopBar({
                 <p className="text-xs text-muted">{f.address}</p>
               </button>
             ))}
+          </div>
+        )}
+        {searchOpen && searchQuery.trim() && !searching && searchResults.length === 0 && (
+          <div className="absolute top-full left-0 right-0 z-50 mt-2 rounded-xl border border-primary/10 bg-white px-4 py-3 text-center text-sm text-muted shadow-soft">
+            {t(lang, 'search_no_results')}
           </div>
         )}
       </div>

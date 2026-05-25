@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
-import { MapPin, Search, Phone } from 'lucide-react';
+import { MapPin, Phone } from 'lucide-react';
 import { useLang } from '../lib/LanguageContext';
 import { t } from '../lib/i18n';
 import { loadIndiaFacilities, getFacilitiesSync } from '../lib/facilitiesData';
 import { facilitiesNearby, geocodeLocation } from '../lib/geoSearch';
 import { FacilityIcon } from '../lib/iconMaps';
 import MapFacilityMarkers from '../components/MapFacilityMarkers';
+import SearchInput from '../components/SearchInput';
 import '../lib/leafletIcon';
 
 function MapFlyTo({ lat, lng }) {
@@ -66,6 +67,13 @@ export default function LiveMapPage({ searchResults, searchLocation }) {
 
   const listPreview = filtered.slice(0, 80);
 
+  const clearMapSearch = () => {
+    setSearchQuery('');
+    setLocalResults([]);
+    setFlyTarget(null);
+    setSelected(null);
+  };
+
   const handleSearch = async (q) => {
     if (!q.trim()) {
       setLocalResults([]);
@@ -118,18 +126,15 @@ export default function LiveMapPage({ searchResults, searchLocation }) {
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <div className="relative min-w-[200px] flex-1 max-w-sm">
-          <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-          <input
-            type="text"
+        <div className="min-w-[200px] flex-1 max-w-sm">
+          <SearchInput
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={setSearchQuery}
+            onClear={clearMapSearch}
             placeholder={t(lang, 'map_search_area')}
-            className="rn-input pl-9"
+            searching={searching}
+            inputClassName={`rn-input pl-11 ${searchQuery.trim() || searching ? 'pr-20' : 'pr-4'}`}
           />
-          {searching && (
-            <span className="absolute right-3 top-1/2 h-4 w-4 animate-spin rounded-full border-2 border-secondary border-t-transparent" />
-          )}
         </div>
         <div className="flex flex-wrap gap-1.5">
           {TYPE_FILTERS.map((f) => (
