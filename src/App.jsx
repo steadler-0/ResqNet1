@@ -38,14 +38,15 @@ function AppInner() {
     return () => clearTimeout(timer);
   }, []);
 
-  const protectedPages = ['dashboard', 'sos', 'map', 'alerts', 'coordinator', 'profile'];
+  /** Coordinator-only routes (citizens use the app without signing in) */
+  const coordinatorOnlyPages = ['alerts', 'coordinator'];
 
   useEffect(() => {
     if (!ready) return;
-    if (user && page === 'login') {
+    if (user?.role === 'coordinator' && page === 'login') {
       setPage(getDefaultPageForRole(user.role));
     }
-    if (!user && protectedPages.includes(page)) {
+    if (!user && coordinatorOnlyPages.includes(page)) {
       setPage('login');
     }
   }, [user, ready, page]);
@@ -90,7 +91,7 @@ function AppInner() {
     );
   }
 
-  const isLanding = page === 'home' && !user;
+  const isLanding = page === 'home';
 
   if (isLanding) {
     return (

@@ -2,23 +2,13 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 
 const STORAGE_KEY = 'resqnet_session';
 
-const DEMO_USERS = {
-  'citizen@resqnet.in': {
-    password: 'citizen123',
-    role: 'citizen',
-    name: 'Arjun Mehta',
-    email: 'citizen@resqnet.in',
-    phone: '+91-98765-43210',
-    photo: null,
-  },
-  'coord@resqnet.gov': {
-    password: 'coord123',
-    role: 'coordinator',
-    name: 'Priya Sharma',
-    email: 'coord@resqnet.gov',
-    phone: '+91-11-2397-0101',
-    photo: null,
-  },
+const COORDINATOR_ACCOUNT = {
+  email: 'coord@resqnet.gov',
+  password: 'coord123',
+  role: 'coordinator',
+  name: 'Priya Sharma',
+  phone: '+91-11-2397-0101',
+  photo: null,
 };
 
 const AuthContext = createContext(null);
@@ -26,7 +16,8 @@ const AuthContext = createContext(null);
 function loadSession() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
+    const session = raw ? JSON.parse(raw) : null;
+    return session?.role === 'coordinator' ? session : null;
   } catch {
     return null;
   }
@@ -41,24 +32,23 @@ export function AuthProvider({ children }) {
     setReady(true);
   }, []);
 
-  const login = useCallback(async (email, password, role) => {
+  const login = useCallback(async (email, password) => {
     const normalized = email.trim().toLowerCase();
     if (!normalized || !password) {
       throw new Error('required');
     }
-    const account = DEMO_USERS[normalized];
-    if (!account || account.password !== password) {
+    if (
+      normalized !== COORDINATOR_ACCOUNT.email ||
+      password !== COORDINATOR_ACCOUNT.password
+    ) {
       throw new Error('invalid');
     }
-    if (role && account.role !== role) {
-      throw new Error('role');
-    }
     const session = {
-      email: normalized,
-      name: account.name,
-      phone: account.phone,
-      role: account.role,
-      photo: account.photo,
+      email: COORDINATOR_ACCOUNT.email,
+      name: COORDINATOR_ACCOUNT.name,
+      phone: COORDINATOR_ACCOUNT.phone,
+      role: 'coordinator',
+      photo: COORDINATOR_ACCOUNT.photo,
       loginAt: new Date().toISOString(),
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
@@ -80,8 +70,20 @@ export function AuthProvider({ children }) {
     });
   }, []);
 
+  const isCoordinator = user?.role === 'coordinator';
+
   return (
-    <AuthContext.Provider value={{ user, ready, login, logout, updateProfile, isAuthenticated: !!user }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        ready,
+        login,
+        logout,
+        updateProfile,
+        isAuthenticated: isCoordinator,
+        isCoordinator,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

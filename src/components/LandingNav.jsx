@@ -5,8 +5,8 @@ import LanguageSelector from './LanguageSelector';
 
 const LANDING_LINKS = [
   { id: 'dashboard', key: 'nav_dashboard' },
-  { id: 'alerts', key: 'nav_alerts' },
   { id: 'map', key: 'nav_map' },
+  { id: 'sos', key: 'nav_sos_send' },
   { id: 'map', key: 'nav_resources' },
 ];
 
@@ -45,11 +45,11 @@ export default function LandingNav({ setPage }) {
             onClick={() => setPage('login')}
             className="hidden rounded-full border border-primary/15 bg-white px-4 py-1.5 text-sm font-medium text-primary sm:inline-flex"
           >
-            {t(lang, 'nav_login')}
+            {t(lang, 'nav_coord_login')}
           </button>
           <button
             type="button"
-            onClick={() => setPage('login')}
+            onClick={() => setPage('dashboard')}
             className="rounded-full bg-primary px-4 py-1.5 text-sm font-semibold text-white shadow-soft"
           >
             {t(lang, 'nav_dashboard')}

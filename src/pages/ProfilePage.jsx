@@ -8,49 +8,58 @@ import LanguageSelector from '../components/LanguageSelector';
 import useLiveGeolocation from '../hooks/useLiveGeolocation';
 
 const SAVED_KEY = 'resqnet_saved_shelters';
+const GUEST_PROFILE_KEY = 'resqnet_guest_profile';
+
+function loadGuestProfile() {
+  try {
+    return JSON.parse(localStorage.getItem(GUEST_PROFILE_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
 
 export default function ProfilePage({ setPage }) {
-  const { lang, setLang } = useLang();
-  const { user, logout, updateProfile } = useAuth();
+  const { lang } = useLang();
+  const { user, logout, updateProfile, isCoordinator } = useAuth();
   const { coords, sourceLabel } = useLiveGeolocation(false);
-  const [name, setName] = useState(user?.name || '');
-  const [phone, setPhone] = useState(user?.phone || '');
+  const guest = loadGuestProfile();
+  const [name, setName] = useState(user?.name || guest.name || '');
+  const [phone, setPhone] = useState(user?.phone || guest.phone || '');
   const [saved, setSaved] = useState([]);
   const [history, setHistory] = useState([]);
   const [msg, setMsg] = useState('');
 
   useEffect(() => {
-    setName(user?.name || '');
-    setPhone(user?.phone || '');
+    const g = loadGuestProfile();
+    setName(user?.name || g.name || '');
+    setPhone(user?.phone || g.phone || '');
     try {
       setSaved(JSON.parse(localStorage.getItem(SAVED_KEY) || '[]'));
     } catch {
       setSaved([]);
     }
-    setHistory(getAlerts().filter((a) => a.reporterEmail === user?.email).slice(0, 10));
+    const alerts = getAlerts();
+    setHistory(
+      user
+        ? alerts.filter((a) => a.reporterEmail === user.email).slice(0, 10)
+        : alerts.filter((a) => a.reporter === 'Citizen App' || a.sos).slice(0, 10)
+    );
   }, [user]);
 
   const handleSave = () => {
-    updateProfile({ name, phone });
+    if (isCoordinator) {
+      updateProfile({ name, phone });
+    } else {
+      localStorage.setItem(GUEST_PROFILE_KEY, JSON.stringify({ name, phone }));
+    }
     setMsg(t(lang, 'profile_updated'));
     setTimeout(() => setMsg(''), 3000);
   };
 
   const handleLogout = () => {
     logout();
-    setPage('login');
+    setPage('home');
   };
-
-  if (!user) {
-    return (
-      <div className="rn-card text-center">
-        <p className="text-muted">{t(lang, 'auth_login_title')}</p>
-        <button type="button" onClick={() => setPage('login')} className="rn-btn-primary mt-4">
-          {t(lang, 'nav_login')}
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="rn-fade-in mx-auto max-w-2xl space-y-6 pb-24 md:pb-6">
@@ -62,7 +71,7 @@ export default function ProfilePage({ setPage }) {
       <div className="rn-card">
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
           <div className="flex h-24 w-24 items-center justify-center rounded-full bg-secondary/15 ring-4 ring-white shadow-soft">
-            {user.photo ? (
+            {user?.photo ? (
               <img src={user.photo} alt="" className="h-full w-full rounded-full object-cover" />
             ) : (
               <User size={40} className="text-secondary" />
@@ -74,12 +83,19 @@ export default function ProfilePage({ setPage }) {
               <input value={name} onChange={(e) => setName(e.target.value)} className="rn-input mt-1" />
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <label className="flex items-center gap-1 text-xs font-semibold uppercase text-muted">
-                  <Mail size={12} /> {t(lang, 'profile_email')}
-                </label>
-                <p className="mt-1 text-sm font-medium text-primary">{user.email}</p>
-              </div>
+              {isCoordinator ? (
+                <div>
+                  <label className="flex items-center gap-1 text-xs font-semibold uppercase text-muted">
+                    <Mail size={12} /> {t(lang, 'profile_email')}
+                  </label>
+                  <p className="mt-1 text-sm font-medium text-primary">{user.email}</p>
+                </div>
+              ) : (
+                <div>
+                  <label className="text-xs font-semibold uppercase text-muted">{t(lang, 'profile_email')}</label>
+                  <p className="mt-1 text-sm text-muted">{t(lang, 'profile_guest_email')}</p>
+                </div>
+              )}
               <div>
                 <label className="flex items-center gap-1 text-xs font-semibold uppercase text-muted">
                   <Phone size={12} /> {t(lang, 'profile_phone')}
@@ -89,8 +105,8 @@ export default function ProfilePage({ setPage }) {
             </div>
             <div className="flex items-center gap-2">
               <Shield size={16} className="text-secondary" />
-              <span className="text-sm font-semibold text-primary capitalize">
-                {t(lang, user.role === 'coordinator' ? 'role_coordinator' : 'role_citizen')}
+              <span className="text-sm font-semibold text-primary">
+                {t(lang, isCoordinator ? 'role_coordinator' : 'role_citizen')}
               </span>
             </div>
           </div>
@@ -100,10 +116,12 @@ export default function ProfilePage({ setPage }) {
           <button type="button" onClick={handleSave} className="rn-btn-secondary text-sm">
             {t(lang, 'profile_save')}
           </button>
-          <button type="button" onClick={handleLogout} className="rn-btn-outline inline-flex items-center gap-2 text-sm text-red-600 border-red-500/30">
-            <LogOut size={16} />
-            {t(lang, 'profile_logout')}
-          </button>
+          {isCoordinator && (
+            <button type="button" onClick={handleLogout} className="rn-btn-outline inline-flex items-center gap-2 text-sm text-red-600 border-red-500/30">
+              <LogOut size={16} />
+              {t(lang, 'profile_logout')}
+            </button>
+          )}
         </div>
       </div>
 

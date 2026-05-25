@@ -32,13 +32,6 @@ export default function HomePage({ setPage }) {
           {t(lang, 'landing_map')}
           <ArrowRight size={18} strokeWidth={2} />
         </button>
-        <button
-          type="button"
-          onClick={() => setPage('login')}
-          className="rn-btn-primary inline-flex items-center justify-center px-8 py-3.5 text-base"
-        >
-          {t(lang, 'nav_login')}
-        </button>
       </div>
     </section>
   );

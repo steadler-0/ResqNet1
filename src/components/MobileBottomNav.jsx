@@ -7,7 +7,6 @@ const CITIZEN_NAV = [
   { page: 'dashboard', key: 'nav_dashboard', Icon: LayoutGrid },
   { page: 'map', key: 'nav_map', Icon: Map },
   { page: 'sos', key: 'nav_sos_send', Icon: CircleAlert, accent: true },
-  { page: 'alerts', key: 'nav_alerts', Icon: Bell },
   { page: 'profile', key: 'nav_profile', Icon: User },
 ];
 
@@ -21,8 +20,8 @@ const COORD_NAV = [
 
 export default function MobileBottomNav({ page, setPage }) {
   const { lang } = useLang();
-  const { user } = useAuth();
-  const items = user?.role === 'coordinator' ? COORD_NAV : CITIZEN_NAV;
+  const { isCoordinator } = useAuth();
+  const items = isCoordinator ? COORD_NAV : CITIZEN_NAV;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-primary/10 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-lg md:hidden">

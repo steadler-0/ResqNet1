@@ -133,7 +133,7 @@ export default function LiveMapPage({ searchResults, searchLocation }) {
             onClear={clearMapSearch}
             placeholder={t(lang, 'map_search_area')}
             searching={searching}
-            inputClassName={`rn-input pl-11 ${searchQuery.trim() || searching ? 'pr-20' : 'pr-4'}`}
+            inputClassName={`rn-input pl-11 ${searchQuery.trim() || searching ? 'pr-11' : 'pr-4'}`}
           />
         </div>
         <div className="flex flex-wrap gap-1.5">
