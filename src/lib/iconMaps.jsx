@@ -67,7 +67,7 @@ export const QUICK_ACCESS_ICONS = {
   coordinator: ClipboardList,
 };
 
-/** Sidebar navigation — matches reference RescueNet layout */
+/** Sidebar navigation — matches reference ResqNet layout */
 export const SIDEBAR_ITEMS = [
   { page: 'dashboard', key: 'nav_dashboard', Icon: LayoutGrid },
   { page: 'alerts', key: 'nav_alerts', Icon: Bell },

@@ -7,7 +7,7 @@ import { getAlerts } from '../lib/alertStore';
 import LanguageSelector from '../components/LanguageSelector';
 import useLiveGeolocation from '../hooks/useLiveGeolocation';
 
-const SAVED_KEY = 'rescuenet_saved_shelters';
+const SAVED_KEY = 'resqnet_saved_shelters';
 
 export default function ProfilePage({ setPage }) {
   const { lang, setLang } = useLang();

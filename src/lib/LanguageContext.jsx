@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 
-const LANG_KEY = 'rescuenet_lang';
+const LANG_KEY = 'resqnet_lang';
 const LanguageContext = createContext(null);
 
 export function LanguageProvider({ children }) {

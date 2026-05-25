@@ -6,7 +6,7 @@ export default function LoadingOverlay({ message = 'Initializing systems...' }) 
         <div className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-secondary" />
         <div className="absolute inset-3 animate-pulse rounded-full bg-secondary/10" />
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-xs font-bold tracking-widest text-white">RN</span>
+          <span className="text-xs font-bold tracking-widest text-white">RQ</span>
         </div>
       </div>
       <p className="mt-6 text-sm font-medium tracking-wide text-white/90">{message}</p>

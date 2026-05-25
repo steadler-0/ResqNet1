@@ -1,6 +1,6 @@
 import { Shield } from 'lucide-react';
 
-/** RescueNet shield mark — dark circle, gold outline (matches reference UI) */
+/** ResqNet shield mark — dark circle, gold outline (matches reference UI) */
 export default function BrandLogo({ size = 'md', variant = 'dark' }) {
   const sizes = {
     sm: { box: 'h-8 w-8', icon: 16 },

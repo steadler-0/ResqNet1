@@ -9,10 +9,10 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['rescuenet-icon.svg'],
+      includeAssets: ['resqnet-icon.svg'],
       manifest: {
-        name: 'RescueNet — India Disaster Response',
-        short_name: 'RescueNet',
+        name: 'ResqNet — India Disaster Response',
+        short_name: 'ResqNet',
         description: 'National emergency platform for India',
         theme_color: '#2C3947',
         background_color: '#E8EDF2',
@@ -21,7 +21,7 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
-            src: '/rescuenet-icon.svg',
+            src: '/resqnet-icon.svg',
             sizes: '192x192',
             type: 'image/svg+xml',
             purpose: 'any maskable',

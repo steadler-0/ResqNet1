@@ -82,7 +82,7 @@ export default function LoginPage({ setPage }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="rn-input"
-              placeholder="citizen@rescuenet.in"
+              placeholder="citizen@resqnet.in"
             />
           </div>
           <div>

@@ -45,31 +45,31 @@ const OVERRIDES = {
     nav_coordinator: 'समन्वयक', nav_login: 'लॉगिन', nav_logout: 'लॉगआउट',
     landing_title: 'भारत का रियल-टाइम आपदा प्रतिक्रिया मंच',
     landing_subtitle: 'अलर्ट ट्रैक करें, आश्रय खोजें, SOS भेजें और समन्वय करें।',
-    auth_login_title: 'RescueNet में लॉगिन', auth_citizen: 'नागरिक', auth_coordinator: 'समन्वयक',
+    auth_login_title: 'ResqNet में लॉगिन', auth_citizen: 'नागरिक', auth_coordinator: 'समन्वयक',
     profile_title: 'मेरी प्रोफ़ाइल', footer_about: 'हमारे बारे में',
     alerts_title: 'अलर्ट डैशबोर्ड', alerts_live: 'लाइव अलर्ट',
   },
   bn: {
     nav_home: 'হোম', nav_dashboard: 'ড্যাশবোর্ড', nav_map: 'লাইভ ম্যাপ', nav_alerts: 'সতর্কতা',
     nav_profile: 'প্রোফাইল', nav_login: 'লগইন', landing_title: 'ভারতের রিয়েল-টাইম দুর্যোগ প্ল্যাটফর্ম',
-    auth_login_title: 'RescueNet লগইন', profile_title: 'আমার প্রোফাইল', alerts_title: 'সতর্কতা ড্যাশবোর্ড',
+    auth_login_title: 'ResqNet লগইন', profile_title: 'আমার প্রোফাইল', alerts_title: 'সতর্কতা ড্যাশবোর্ড',
   },
   ta: {
     nav_home: 'முகப்பு', nav_dashboard: 'டாஷ்போர்டு', nav_map: 'நேரடி வரைபடம்', nav_alerts: 'எச்சரிக்கை',
     nav_profile: 'சுயவிவரம்', nav_login: 'உள்நுழை', landing_title: 'இந்தியா நேரடி பேரிடர் மேடை',
-    auth_login_title: 'RescueNet உள்நுழைவு', profile_title: 'என் சுயவிவரம்', alerts_title: 'எச்சரிக்கை டாஷ்போர்டு',
+    auth_login_title: 'ResqNet உள்நுழைவு', profile_title: 'என் சுயவிவரம்', alerts_title: 'எச்சரிக்கை டாஷ்போர்டு',
   },
   te: {
     nav_home: 'హోమ్', nav_dashboard: 'డాష్‌బోర్డ్', nav_map: 'లైవ్ మ్యాప్', nav_alerts: 'హెచ్చరికలు',
     nav_profile: 'ప్రొఫైల్', nav_login: 'లాగిన్', landing_title: 'భారత రియల్-టైమ్ విపత్తు వేదిక',
-    auth_login_title: 'RescueNet లాగిన్', profile_title: 'నా ప్రొఫైల్', alerts_title: 'హెచ్చరికల డాష్‌బోర్డ్',
+    auth_login_title: 'ResqNet లాగిన్', profile_title: 'నా ప్రొఫైల్', alerts_title: 'హెచ్చరికల డాష్‌బోర్డ్',
   },
 };
 
 function expandFromHi(code, label) {
   const hi = { ...EN_KEYS, ...OVERRIDES.hi };
   const o = OVERRIDES[code] || {};
-  return { ...hi, ...o, nav_brand: 'RescueNet', lang_name: label };
+  return { ...hi, ...o, nav_brand: 'ResqNet', lang_name: label };
 }
 
 const packs = {};

@@ -1,21 +1,21 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
-const STORAGE_KEY = 'rescuenet_session';
+const STORAGE_KEY = 'resqnet_session';
 
 const DEMO_USERS = {
-  'citizen@rescuenet.in': {
+  'citizen@resqnet.in': {
     password: 'citizen123',
     role: 'citizen',
     name: 'Arjun Mehta',
-    email: 'citizen@rescuenet.in',
+    email: 'citizen@resqnet.in',
     phone: '+91-98765-43210',
     photo: null,
   },
-  'coord@rescuenet.gov': {
+  'coord@resqnet.gov': {
     password: 'coord123',
     role: 'coordinator',
     name: 'Priya Sharma',
-    email: 'coord@rescuenet.gov',
+    email: 'coord@resqnet.gov',
     phone: '+91-11-2397-0101',
     photo: null,
   },

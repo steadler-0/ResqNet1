@@ -18,7 +18,7 @@ export async function submitEmergencyReport(report, reporter = {}) {
     reporterPhone: reporter.phone || '',
   };
   pushAlert(full);
-  console.log('[RescueNet] Emergency report queued for coordinators:', full.id);
+  console.log('[ResqNet] Emergency report queued for coordinators:', full.id);
   return full.id;
 }
 

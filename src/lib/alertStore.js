@@ -3,7 +3,7 @@
  * Persists to localStorage for cross-tab sync.
  */
 
-const STORAGE_KEY = 'rescuenet_alerts';
+const STORAGE_KEY = 'resqnet_alerts';
 const listeners = new Set();
 
 function load() {
