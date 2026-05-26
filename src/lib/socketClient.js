@@ -1,7 +1,7 @@
 import { io } from 'socket.io-client';
 
 const SOCKET_URL =
-  import.meta.env.VITE_SOCKET_URL?.replace(/\/$/, '') || 'http://localhost:3001';
+  import.meta.env.VITE_SOCKET_URL?.replace(/\/$/, '') || 'https://resqnet1-x9e8.onrender.com';
 
 const SOCKET_OPTS = {
   transports: ['websocket', 'polling'],

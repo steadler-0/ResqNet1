@@ -14,6 +14,7 @@ const ALLOWED_ORIGINS = [
   'http://127.0.0.1:5173',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
+  'http://192.168.15.180:5173'
 ];
 
 const app = express();
@@ -46,6 +47,6 @@ app.use('/api', createApiRouter(io));
 await initStore();
 await initFirebase();
 
-server.listen(PORT, () => {
+server.listen(PORT, "0.0.0.0",() => {
   console.log(`[RescueNet] API + Socket.io on http://localhost:${PORT}`);
 });

@@ -138,7 +138,7 @@ export default function SOSPage({ searchPlace, searchPlaceTick = 0 }) {
         err.message === 'api_offline'
           ? 'Server offline — run npm run dev:server in a terminal'
           : err.message === 'request_timeout'
-            ? 'Request timed out — check API at http://localhost:3001'
+            ? 'Request timed out — check API at https://resqnet1-x9e8.onrender.com'
             : t(lang, 'sos_submit_failed') || 'Could not send alert. Try again.';
       setSubmitError(msg);
       console.error('[ResqNet] SOS submit failed:', err);

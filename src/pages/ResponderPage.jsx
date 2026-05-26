@@ -19,7 +19,12 @@ import {
   updateMissionStatus,
   responderHeartbeat,
 } from '../lib/emergencyApi';
-import { emitResponderLocation, disconnectResponderSocket, getSocketUrl } from '../lib/socketClient';
+import {
+  acceptEmergencySocket,
+  emitResponderLocation,
+  disconnectResponderSocket,
+  getSocketUrl,
+} from '../lib/socketClient';
 import { ensureResponderAlertWire, onResponderAlert, pingResponderOnline } from '../lib/responderAlertBus';
 import { requestNotificationPermission, showLocalNotification } from '../lib/pushNotifications';
 import { playEmergencyAlert, vibrateEmergencyAlert } from '../lib/alertSound';
@@ -188,13 +193,32 @@ export default function ResponderPage({ searchPlace, searchPlaceTick = 0 }) {
 
   const handleAccept = async () => {
     if (!incoming) return;
+    const eid = incoming.emergencyId || incoming.incidentId || incoming.id;
     setAccepting(true);
     try {
-      const { emergency } = await acceptEmergency(incoming.emergencyId, responderId);
+      await responderHeartbeat(responderId, {
+        lat: coords.lat ?? incoming.citizenLat ?? incoming.latitude,
+        lng: coords.lng ?? incoming.citizenLng ?? incoming.longitude,
+        available: true,
+      });
+
+      let result = await Promise.race([
+        acceptEmergencySocket(eid, responderId),
+        new Promise((resolve) => setTimeout(() => resolve(null), 6000)),
+      ]);
+      if (!result?.ok) {
+        result = await acceptEmergency(eid, responderId);
+      }
+      if (!result?.ok) {
+        throw Object.assign(new Error(result?.error || 'accept_failed'), { data: result });
+      }
+
+      const emergency = result.emergency || incoming;
       setActiveMission({
         ...emergency,
-        citizenLat: incoming.citizenLat,
-        citizenLng: incoming.citizenLng,
+        id: emergency.id || eid,
+        citizenLat: incoming.citizenLat ?? incoming.latitude ?? emergency.lat,
+        citizenLng: incoming.citizenLng ?? incoming.longitude ?? emergency.lng,
       });
       setIncoming(null);
       setMissionStatus('Accepted');

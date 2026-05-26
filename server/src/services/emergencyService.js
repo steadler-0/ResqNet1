@@ -149,6 +149,28 @@ export async function tryAcceptEmergency(emergencyId, responderId, io) {
 
   const responder = getResponder(responderId);
   if (!responder) return { ok: false, error: 'responder_not_found' };
+
+  if (responder.activeEmergencyId === emergencyId) {
+    if (emergency.locked && emergency.responderId === responderId) {
+      return { ok: true, emergency };
+    }
+  }
+
+  if (responder.activeEmergencyId) {
+    const prev = getEmergency(responder.activeEmergencyId);
+    const stale =
+      !prev ||
+      prev.status === 'Resolved' ||
+      prev.responderId !== responderId ||
+      !prev.locked;
+    if (stale) {
+      responder.activeEmergencyId = null;
+      responder.status = 'idle';
+      responder.available = true;
+      await saveResponder(responder);
+    }
+  }
+
   if (!responder.available || responder.activeEmergencyId) {
     return { ok: false, error: 'responder_unavailable' };
   }

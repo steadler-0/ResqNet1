@@ -7,8 +7,8 @@ export default defineConfig({
   server: {
     host: true,
     proxy: {
-      '/api': { target: 'http://localhost:3001', changeOrigin: true },
-      '/socket.io': { target: 'http://localhost:3001', ws: true },
+      '/api': { target: 'https://resqnet1-x9e8.onrender.com', changeOrigin: true },
+      '/socket.io': { target: 'https://resqnet1-x9e8.onrender.com', ws: true },
     },
   },
   plugins: [

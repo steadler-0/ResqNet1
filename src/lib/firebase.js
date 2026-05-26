@@ -24,23 +24,30 @@ export async function submitEmergencyReport(report, reporter = {}) {
 
   const apiUp = await checkApiHealth();
   if (!apiUp) {
-    console.error('[ResqNet] API offline — run: npm run dev:server @', getApiBase());
-    pushAlert({ ...full, status: 'Broadcasting' });
-    throw new Error('api_offline');
+    console.warn('[ResqNet] API health check failed — attempting socket / REST fallback @', getApiBase());
   }
 
   let emergencyId = full.id;
   let result = null;
+  let socketErr = null;
 
   try {
     console.log('[ResqNet] Emitting sos_request via socket @', getSocketUrl());
     result = await emitSosRequest(full);
     emergencyId = result.emergency?.id || result.payload?.id || full.id;
     console.log('[ResqNet] sos_request broadcast ok', emergencyId);
-  } catch (socketErr) {
-    console.warn('[ResqNet] sos_request failed, REST fallback:', socketErr.message);
-    result = await createEmergency(full);
-    emergencyId = result.emergency?.id || full.id;
+  } catch (err) {
+    socketErr = err;
+    console.warn('[ResqNet] sos_request failed, REST fallback:', err.message);
+    try {
+      result = await createEmergency(full);
+      emergencyId = result.emergency?.id || full.id;
+    } catch (restErr) {
+      console.error('[ResqNet] emergency REST create failed:', restErr);
+      pushAlert({ ...full, status: 'Broadcasting' });
+      if (!apiUp) throw new Error('api_offline');
+      throw restErr;
+    }
   }
 
   pushAlert({

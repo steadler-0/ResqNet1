@@ -118,7 +118,13 @@ export function createApiRouter(io) {
     const { lat, lng, available } = req.body;
     if (lat != null) r.lat = lat;
     if (lng != null) r.lng = lng;
-    if (available !== undefined) r.available = !!available;
+    if (available !== undefined) {
+      r.available = !!available;
+      if (available) {
+        r.activeEmergencyId = null;
+        r.status = 'idle';
+      }
+    }
     r.lastSeen = new Date().toISOString();
     await saveResponder(r);
     if (lat != null && lng != null) {
